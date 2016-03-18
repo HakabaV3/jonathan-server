@@ -11,7 +11,7 @@ var GroupSchema = new mongoose.Schema({
 	name: String,
 	created: Number,
 	updated: Number,
-	menbers: [userSchema],
+	members: [userSchema],
 	payments: [paymentSchema],
 	uuid: String
 });

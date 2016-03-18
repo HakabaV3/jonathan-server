@@ -43,7 +43,7 @@ router.post('/', function(req, res) {
 
   Auth.pGetOne(authQuery)
     .then(auth => User.pGetOne(userQuery, auth, req))
-    .then(user => Group.pCreate(user))
+    .then(user => Group.pCreate(req.body.name, [user]))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
