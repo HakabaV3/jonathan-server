@@ -20,9 +20,9 @@ GroupSchema.pre('save', function(next) {
 	now = parseInt(Date.now() / 1000);
 	this.updated = now;
 	if (!this.created) this.created = now;
-	if (!this.endTime) this.endTime = now;
 	if (!this.uuid) this.uuid = uuid.v4();
 
+	console.log('!!!!!!!!!!! pre save !!!!!!!!!!!!!');
 	next();
 });
 
