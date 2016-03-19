@@ -3,6 +3,7 @@ var express = require('express'),
   Auth = require('../../model/auth.js'),
   User = require('../../model/user.js'),
   Group = require('../../model/group.js'),
+  Payment = require('../../model/payment.js'),
   Error = require('../../model/error.js');
 
 router.get('/', function(req, res) {
@@ -65,33 +66,27 @@ router.post('/:groupId/join', function(req, res) {
     .catch(error => Error.pipeErrorRender(req, res, error))
 });
 
-// router.post('/:gameId/invitation', function(req, res) {
-//   var authQuery = {
-//       token: req.headers['x-session-token']
-//     },
-//     userQuery = {
-//       deleted: false
-//     },
-//     gameQuery = {
-//       uuid: req.params.gameId
-//     },
-//     invitationQuery = {
-//       targetId: req.body.userId
-//     };
-//   Auth.pGetOne(authQuery)
-//     .then(auth => User.pGetOne(userQuery, auth, req))
-//     .then(user => Game.pGetOne(gameQuery, user.uuid))
-//     .then(game => Invitation.pCreate({
-//       targetId: req.body.userId,
-//       gameId: game.uuid,
-//       creator: {
-//         id: req.jonathanSession.currentUser.uuid,
-//         name: req.jonathanSession.currentUser.name
-//       }
-//     }))
-//     .then(invitation => Invitation.pipeSuccessRender(req, res, invitation))
-//     .catch(error => Error.pipeErrorRender(req, res, error))
-// });
+router.post('/:groupId/payment', function(req, res) {
+  var authQuery = {
+      token: req.headers['x-session-token']
+    },
+    userQuery = {
+      deleted: false
+    },
+    groupQuery = {
+      uuid: req.params.groupId
+    },
+    paymentQuery = {
+  		title: req.body.title,
+  		price: req.body.price,
+  		payerId: req.body.payerId
+    }
+  Auth.pGetOne(authQuery)
+  .then(auth => Payment.pCreate(paymentQuery))
+    .then(payment => Group.pPushPayment(groupQuery, payment))
+    .then(group => Group.pipeSuccessRender(req, res, group))
+    .catch(error => Error.pipeErrorRender(req, res, error))
+});
 //
 // router.get('/:gameId/qrcode', function(req, res) {
 //   var authQuery = {

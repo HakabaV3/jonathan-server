@@ -26,7 +26,7 @@ _.pGet = function(userId) {
   });
 };
 
-_.pGetOne = function(query, user) {
+_.pGetOne = function(query) {
   console.log('Group.pGetOne');
 
   return new Promise(function(resolve, reject) {
@@ -93,7 +93,7 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
 
 _.pPushUser = function(query, user) {
   console.log('Group.pPushUser');
-  return _.pGetOne(query, user).then(group => {
+  return _.pGetOne(query).then(group => {
     return new Promise(function(resolve, reject) {
       var groupQuery = {
         uuid: group.uuid
@@ -115,6 +115,31 @@ _.pPushUser = function(query, user) {
     });
   });
 };
+
+_.pPushPayment = function(query, payment) {
+	console.log('Group.pPushPayment');
+  return _.pGetOne(query).then(group => {
+    return new Promise(function(resolve, reject) {
+      var groupQuery = {
+        uuid: group.uuid
+      };
+
+      model.findOneAndUpdate(groupQuery, {
+        $push: {
+          payments: payment
+        }
+      }, {
+        safe: true,
+        new: true
+      }, function(err, updatedGroup) {
+        if (err) return reject(Error.mongoose(500, err));
+        if (!updatedGroup) return reject(Error.invalidParameter);
+
+        resolve(updatedGroup);
+      });
+    });
+  });
+}
 
 // _.pPutMove = function(px, py, group) {
 //   console.log('Group.pPutMove');
