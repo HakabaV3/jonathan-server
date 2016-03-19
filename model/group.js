@@ -16,7 +16,7 @@ _.pGet = function(userId) {
     },
     deleted: false
   };
-	option = {};
+  option = {};
   return new Promise(function(resolve, reject) {
     model.find(query, {}, option, function(err, groups) {
       if (err) return reject(Error.mongoose(500, err));
@@ -28,13 +28,6 @@ _.pGet = function(userId) {
 
 _.pGetOne = function(query, user) {
   console.log('Group.pGetOne');
-  if (user) {
-    query.$or = [{
-      players: user.name
-    }, {
-      guests: user.name
-    }];
-  }
 
   return new Promise(function(resolve, reject) {
     model.findOne(query, function(err, group) {
@@ -51,7 +44,7 @@ _.pCreate = function(name, users) {
   console.log('Group.pCreate');
   console.log(users);
   var query = {
-		name: name,
+    name: name,
     members: users
   };
   console.log(query);
@@ -69,12 +62,12 @@ _.pCreate = function(name, users) {
 _.pipeSuccessRender = function(req, res, group) {
   console.log('Group.pipeSuccessRender\n');
   var groupObj = {
-		id: group.uuid,
-		name: group.name,
-		menbers: group.members,
-		payments: group.payments,
-		created: group.created,
-		updated: group.updated
+    id: group.uuid,
+    name: group.name,
+    menbers: group.members,
+    payments: group.payments,
+    created: group.created,
+    updated: group.updated
   };
   return res.ok(200, {
     group: groupObj
@@ -89,11 +82,37 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
         id: group.uuid,
         name: group.name,
         menbers: group.members,
-				payments: group.payments,
+        payments: group.payments,
         created: group.created,
         updated: group.updated
       };
     })
+  });
+};
+
+
+_.pPushUser = function(query, user) {
+  console.log('Group.pPushUser');
+  return _.pGetOne(query, user).then(group => {
+    return new Promise(function(resolve, reject) {
+      var groupQuery = {
+        uuid: group.uuid
+      };
+
+      model.findOneAndUpdate(groupQuery, {
+        $push: {
+          members: user
+        }
+      }, {
+        safe: true,
+        new: true
+      }, function(err, updatedGroup) {
+        if (err) return reject(Error.mongoose(500, err));
+        if (!updatedGroup) return reject(Error.invalidParameter);
+
+        resolve(updatedGroup);
+      });
+    });
   });
 };
 
