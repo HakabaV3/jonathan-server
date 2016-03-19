@@ -1,5 +1,6 @@
 var mongoose = require('./db.js'),
   schema = require('../schema/group.js'),
+  GroupHelper = require('../helper/group.js'),
   Error = require('./error.js');
 
 var _ = {},
@@ -61,32 +62,15 @@ _.pCreate = function(name, users) {
 
 _.pipeSuccessRender = function(req, res, group) {
   console.log('Group.pipeSuccessRender\n');
-  var groupObj = {
-    id: group.uuid,
-    name: group.name,
-    menbers: group.members,
-    payments: group.payments,
-    created: group.created,
-    updated: group.updated
-  };
   return res.ok(200, {
-    group: groupObj
+    group: GroupHelper.formatGroup(group)
   });
 };
 
 _.pipeSuccessRenderAll = function(req, res, groups) {
   console.log('Group.pipeSuccessRendeAll\n');
   return res.ok(200, {
-    groups: groups.map(function(group) {
-      return {
-        id: group.uuid,
-        name: group.name,
-        menbers: group.members,
-        payments: group.payments,
-        created: group.created,
-        updated: group.updated
-      };
-    })
+    groups: GroupHelper.formatGroups(groups)
   });
 };
 
@@ -117,7 +101,7 @@ _.pPushUser = function(query, user) {
 };
 
 _.pPushPayment = function(query, payment) {
-	console.log('Group.pPushPayment');
+  console.log('Group.pPushPayment');
   return _.pGetOne(query).then(group => {
     return new Promise(function(resolve, reject) {
       var groupQuery = {

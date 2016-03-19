@@ -15,9 +15,6 @@ _.pGetOne = function(query, auth, req) {
 			if (err) return reject(Error.mongoose(500, err));
 			if (!user) return reject(Error.unauthorized);
 
-			if (auth && req) {
-				req.jonathanSession.currentUser = user;
-			}
 			resolve(user);
 		});
 	});
