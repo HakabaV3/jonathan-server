@@ -8,6 +8,7 @@ var PaymentSchema = new mongoose.Schema({
 	},
 	price: Number,
 	payerId: String,
+	title: String,
 	uuid: String,
 	created: Number,
 	updated: Number
