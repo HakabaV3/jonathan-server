@@ -47,26 +47,24 @@ router.post('/', function(req, res) {
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
-//
-// router.post('/:gameId/join', function(req, res) {
-//   var authQuery = {
-//       token: req.headers['x-session-token']
-//     },
-//     userQuery = {
-//       deleted: false
-//     },
-//     gameQuery = {
-//       scene: 0,
-//       uuid: req.params.gameId
-//     };
-//   Auth.pGetOne(authQuery)
-//     .then(auth => User.pGetOne(userQuery, auth, req))
-//     .then(user => Game.pGetOne(gameQuery))
-//     .then(game => Game.pPushPlayer(game, req.jonathanSession.currentUser))
-//     .then(game => Game.pipeSuccessRender(req, res, game))
-//     .catch(error => Error.pipeErrorRender(req, res, error))
-// });
-//
+
+router.post('/:groupId/join', function(req, res) {
+  var authQuery = {
+      token: req.headers['x-session-token']
+    },
+    userQuery = {
+      deleted: false
+    },
+    gameQuery = {
+      uuid: req.params.groupId
+    };
+  Auth.pGetOne(authQuery)
+    .then(auth => User.pGetOne(userQuery, auth, req))
+    .then(user => Group.pPushUser(gameQuery, user))
+    .then(group => Group.pipeSuccessRender(req, res, group))
+    .catch(error => Error.pipeErrorRender(req, res, error))
+});
+
 // router.post('/:gameId/invitation', function(req, res) {
 //   var authQuery = {
 //       token: req.headers['x-session-token']
