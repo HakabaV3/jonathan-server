@@ -32,4 +32,11 @@ Error.unauthorized = {
 	}
 };
 
+Error.notFound = {
+	code: 404,
+	error: {
+		message: 'Not Found'
+	}
+};
+
 module.exports = Error;

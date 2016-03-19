@@ -2,7 +2,8 @@ var express = require('express'),
 	router = express.Router(),
 	authRouter = require('./v1/auth.js'),
 	userRouter = require('./v1/user.js'),
-	groupRouter = require('./v1/group.js');
+	groupRouter = require('./v1/group.js'),
+	Error = require('../model/error.js');
 
 express.response.ok = function(code, result) {
 	return this.json({
@@ -32,5 +33,9 @@ router.use(function(req, res, next) {
 router.use('/auth', authRouter);
 router.use('/user', userRouter);
 router.use('/group', groupRouter);
+
+router.use(function(req, res, next) {
+	return Error.pipeErrorRender(req, res, Error.notFound);
+});
 
 module.exports = router;
