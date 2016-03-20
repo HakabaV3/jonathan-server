@@ -39,4 +39,11 @@ Error.notFound = {
 	}
 };
 
+Error.conficts = {
+	code: 409,
+	error: {
+		message: 'Conflicts data'
+	}
+}
+
 module.exports = Error;
