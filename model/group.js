@@ -4,49 +4,58 @@ var mongoose = require('./db.js'),
   Error = require('./error.js');
 
 var _ = {},
-  model = mongoose.model('Group', schema);
+  model = mongoose.model('Group', schema),
+  ObjectId = mongoose.Schema.ObjectId;
 
-_.pGet = function(userId) {
+_.pGet = function(user) {
   console.log('Group.pGet');
-  console.log(userId);
+  console.log(user);
   var query = {
-    members: {
-      $elemMatch: {
-        uuid: userId
-      }
-    },
+    members: user._id,
     deleted: false
   };
   option = {};
   return new Promise(function(resolve, reject) {
-    model.find(query, {}, option, function(err, groups) {
-      if (err) return reject(Error.mongoose(500, err));
+    model.find(query)
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, groups) {
+        if (err) return reject(Error.mongoose(500, err));
 
-      resolve(groups);
-    });
+        console.log('may be groups...');
+        console.log(groups);
+        resolve(groups);
+      });
   });
 };
 
-_.pGetOne = function(query) {
+_.pGetOne = function(groupId) {
   console.log('Group.pGetOne');
 
+  var query = {
+    uuid: groupId
+  };
   return new Promise(function(resolve, reject) {
-    model.findOne(query, function(err, group) {
-      console.log(group);
-      if (err) return reject(Error.mongoose(500, err));
-      if (!group) return reject(Error.invalidParameter);
+    model.findOne(query)
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, group) {
+        console.log(group);
+        if (err) return reject(Error.mongoose(500, err));
+        if (!group) return reject(Error.invalidParameter);
 
-      resolve(group);
-    });
+        resolve(group);
+      });
   });
 };
 
-_.pCreate = function(name, users) {
+_.pCreate = function(name, user) {
   console.log('Group.pCreate');
-  console.log(users);
   var query = {
     name: name,
-    members: users
+    members: [user._id]
   };
   console.log(query);
   return new Promise(function(resolve, reject) {
@@ -75,51 +84,54 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
 };
 
 
-_.pPushUser = function(query, user) {
+_.pPushUser = function(groupId, user) {
   console.log('Group.pPushUser');
-  return _.pGetOne(query).then(group => {
-    return new Promise(function(resolve, reject) {
-      var groupQuery = {
-        uuid: group.uuid
-      };
-
-      model.findOneAndUpdate(groupQuery, {
+  return new Promise(function(resolve, reject) {
+    var groupQuery = {
+      uuid: groupId
+    };
+    model.findOneAndUpdate(groupQuery, {
         $push: {
-          members: user
+          members: user._id
         }
       }, {
         new: true
-      }, function(err, updatedGroup) {
+      })
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, updatedGroup) {
         if (err) return reject(Error.mongoose(500, err));
         if (!updatedGroup) return reject(Error.invalidParameter);
 
+        console.log(updatedGroup);
         resolve(updatedGroup);
       });
-    });
   });
 };
 
-_.pPushPayment = function(query, payment) {
+_.pPushPayment = function(groupId, payment) {
   console.log('Group.pPushPayment');
-  return _.pGetOne(query).then(group => {
-    return new Promise(function(resolve, reject) {
-      var groupQuery = {
-        uuid: group.uuid
-      };
-
-      model.findOneAndUpdate(groupQuery, {
+  return new Promise(function(resolve, reject) {
+    var groupQuery = {
+      uuid: groupId
+    };
+    model.findOneAndUpdate(groupQuery, {
         $push: {
-          payments: payment
+          payments: payment._id
         }
       }, {
         new: true
-      }, function(err, updatedGroup) {
+      })
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, updatedGroup) {
         if (err) return reject(Error.mongoose(500, err));
         if (!updatedGroup) return reject(Error.invalidParameter);
 
         resolve(updatedGroup);
       });
-    });
   });
 }
 module.exports = _;

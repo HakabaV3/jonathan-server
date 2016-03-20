@@ -8,10 +8,14 @@ var express = require('express'),
 
 router.get('/', function(req, res) {
   var authQuery = {
-    token: req.headers['x-session-token']
-  }
+      token: req.headers['x-session-token']
+    },
+    userQuery = {
+      deleted: false
+    };
   Auth.pGetOne(authQuery)
-    .then(auth => Group.pGet(auth.userId))
+    .then(auth => User.pGetOne(userQuery, auth, req))
+    .then(user => Group.pGet(user))
     .then(groups => Group.pipeSuccessRenderAll(req, res, groups))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
@@ -26,7 +30,7 @@ router.post('/', function(req, res) {
 
   Auth.pGetOne(authQuery)
     .then(auth => User.pGetOne(userQuery, auth, req))
-    .then(user => Group.pCreate(req.body.name, [user]))
+    .then(user => Group.pCreate(req.body.name, user))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
@@ -37,13 +41,10 @@ router.post('/:groupId/join', function(req, res) {
     },
     userQuery = {
       deleted: false
-    },
-    gameQuery = {
-      uuid: req.params.groupId
     };
   Auth.pGetOne(authQuery)
     .then(auth => User.pGetOne(userQuery, auth, req))
-    .then(user => Group.pPushUser(gameQuery, user))
+    .then(user => Group.pPushUser(req.params.groupId, user))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 });
@@ -52,12 +53,6 @@ router.post('/:groupId/payment', function(req, res) {
   var authQuery = {
       token: req.headers['x-session-token']
     },
-    userQuery = {
-      deleted: false
-    },
-    groupQuery = {
-      uuid: req.params.groupId
-    },
     paymentQuery = {
       title: req.body.title,
       price: req.body.price,
@@ -65,7 +60,7 @@ router.post('/:groupId/payment', function(req, res) {
     }
   Auth.pGetOne(authQuery)
     .then(auth => Payment.pCreate(paymentQuery))
-    .then(payment => Group.pPushPayment(groupQuery, payment))
+    .then(payment => Group.pPushPayment(req.params.groupId, payment))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 });

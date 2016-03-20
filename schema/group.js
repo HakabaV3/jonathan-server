@@ -1,9 +1,8 @@
 var mongoose = require('../model/db.js'),
 	uuid = require('node-uuid'),
-	userSchema = require('./user.js'),
-	paymentSchema = require('./payment.js');
+	Schema = mongoose.Schema;
 
-var GroupSchema = new mongoose.Schema({
+var GroupSchema = new Schema({
 	deleted: {
 		type: Boolean,
 		default: false
@@ -11,8 +10,8 @@ var GroupSchema = new mongoose.Schema({
 	name: String,
 	created: Number,
 	updated: Number,
-	members: [userSchema],
-	payments: [paymentSchema],
+	members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
 	uuid: String
 });
 
