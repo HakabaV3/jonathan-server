@@ -27,9 +27,12 @@ _.pGet = function(userId) {
   });
 };
 
-_.pGetOne = function(query) {
+_.pGetOne = function(groupId) {
   console.log('Group.pGetOne');
 
+  var query = {
+    uuid: groupId
+  };
   return new Promise(function(resolve, reject) {
     model.findOne(query, function(err, group) {
       console.log(group);
@@ -75,50 +78,44 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
 };
 
 
-_.pPushUser = function(query, user) {
+_.pPushUser = function(groupId, user) {
   console.log('Group.pPushUser');
-  return _.pGetOne(query).then(group => {
-    return new Promise(function(resolve, reject) {
-      var groupQuery = {
-        uuid: group.uuid
-      };
+  return new Promise(function(resolve, reject) {
+    var groupQuery = {
+      uuid: groupId
+    };
+    model.findOneAndUpdate(groupQuery, {
+      $push: {
+        members: user
+      }
+    }, {
+      new: true
+    }, function(err, updatedGroup) {
+      if (err) return reject(Error.mongoose(500, err));
+      if (!updatedGroup) return reject(Error.invalidParameter);
 
-      model.findOneAndUpdate(groupQuery, {
-        $push: {
-          members: user
-        }
-      }, {
-        new: true
-      }, function(err, updatedGroup) {
-        if (err) return reject(Error.mongoose(500, err));
-        if (!updatedGroup) return reject(Error.invalidParameter);
-
-        resolve(updatedGroup);
-      });
+      resolve(updatedGroup);
     });
   });
 };
 
-_.pPushPayment = function(query, payment) {
+_.pPushPayment = function(groupId, payment) {
   console.log('Group.pPushPayment');
-  return _.pGetOne(query).then(group => {
-    return new Promise(function(resolve, reject) {
-      var groupQuery = {
-        uuid: group.uuid
-      };
+  return new Promise(function(resolve, reject) {
+    var groupQuery = {
+      uuid: groupId
+    };
+    model.findOneAndUpdate(groupQuery, {
+      $push: {
+        payments: payment
+      }
+    }, {
+      new: true
+    }, function(err, updatedGroup) {
+      if (err) return reject(Error.mongoose(500, err));
+      if (!updatedGroup) return reject(Error.invalidParameter);
 
-      model.findOneAndUpdate(groupQuery, {
-        $push: {
-          payments: payment
-        }
-      }, {
-        new: true
-      }, function(err, updatedGroup) {
-        if (err) return reject(Error.mongoose(500, err));
-        if (!updatedGroup) return reject(Error.invalidParameter);
-
-        resolve(updatedGroup);
-      });
+      resolve(updatedGroup);
     });
   });
 }
