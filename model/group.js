@@ -4,26 +4,29 @@ var mongoose = require('./db.js'),
   Error = require('./error.js');
 
 var _ = {},
-  model = mongoose.model('Group', schema);
+  model = mongoose.model('Group', schema),
+  ObjectId = mongoose.Schema.ObjectId;
 
-_.pGet = function(userId) {
+_.pGet = function(user) {
   console.log('Group.pGet');
-  console.log(userId);
+  console.log(user);
   var query = {
-    members: {
-      $elemMatch: {
-        uuid: userId
-      }
-    },
+    members: user._id,
     deleted: false
   };
   option = {};
   return new Promise(function(resolve, reject) {
-    model.find(query, {}, option, function(err, groups) {
-      if (err) return reject(Error.mongoose(500, err));
+    model.find(query)
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, groups) {
+        if (err) return reject(Error.mongoose(500, err));
 
-      resolve(groups);
-    });
+        console.log('may be groups...');
+        console.log(groups);
+        resolve(groups);
+      });
   });
 };
 
@@ -34,22 +37,25 @@ _.pGetOne = function(groupId) {
     uuid: groupId
   };
   return new Promise(function(resolve, reject) {
-    model.findOne(query, function(err, group) {
-      console.log(group);
-      if (err) return reject(Error.mongoose(500, err));
-      if (!group) return reject(Error.invalidParameter);
+    model.findOne(query)
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, group) {
+        console.log(group);
+        if (err) return reject(Error.mongoose(500, err));
+        if (!group) return reject(Error.invalidParameter);
 
-      resolve(group);
-    });
+        resolve(group);
+      });
   });
 };
 
-_.pCreate = function(name, users) {
+_.pCreate = function(name, user) {
   console.log('Group.pCreate');
-  console.log(users);
   var query = {
     name: name,
-    members: users
+    members: [user._id]
   };
   console.log(query);
   return new Promise(function(resolve, reject) {
@@ -85,17 +91,22 @@ _.pPushUser = function(groupId, user) {
       uuid: groupId
     };
     model.findOneAndUpdate(groupQuery, {
-      $push: {
-        members: user
-      }
-    }, {
-      new: true
-    }, function(err, updatedGroup) {
-      if (err) return reject(Error.mongoose(500, err));
-      if (!updatedGroup) return reject(Error.invalidParameter);
+        $push: {
+          members: user._id
+        }
+      }, {
+        new: true
+      })
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, updatedGroup) {
+        if (err) return reject(Error.mongoose(500, err));
+        if (!updatedGroup) return reject(Error.invalidParameter);
 
-      resolve(updatedGroup);
-    });
+        console.log(updatedGroup);
+        resolve(updatedGroup);
+      });
   });
 };
 
@@ -106,17 +117,21 @@ _.pPushPayment = function(groupId, payment) {
       uuid: groupId
     };
     model.findOneAndUpdate(groupQuery, {
-      $push: {
-        payments: payment
-      }
-    }, {
-      new: true
-    }, function(err, updatedGroup) {
-      if (err) return reject(Error.mongoose(500, err));
-      if (!updatedGroup) return reject(Error.invalidParameter);
+        $push: {
+          payments: payment._id
+        }
+      }, {
+        new: true
+      })
+      .lean()
+      .populate('members')
+      .populate('payments')
+      .exec(function(err, updatedGroup) {
+        if (err) return reject(Error.mongoose(500, err));
+        if (!updatedGroup) return reject(Error.invalidParameter);
 
-      resolve(updatedGroup);
-    });
+        resolve(updatedGroup);
+      });
   });
 }
 module.exports = _;

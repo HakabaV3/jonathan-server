@@ -8,10 +8,14 @@ var express = require('express'),
 
 router.get('/', function(req, res) {
   var authQuery = {
-    token: req.headers['x-session-token']
-  }
+      token: req.headers['x-session-token']
+    },
+    userQuery = {
+      deleted: false
+    };
   Auth.pGetOne(authQuery)
-    .then(auth => Group.pGet(auth.userId))
+    .then(auth => User.pGetOne(userQuery, auth, req))
+    .then(user => Group.pGet(user))
     .then(groups => Group.pipeSuccessRenderAll(req, res, groups))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
@@ -26,7 +30,7 @@ router.post('/', function(req, res) {
 
   Auth.pGetOne(authQuery)
     .then(auth => User.pGetOne(userQuery, auth, req))
-    .then(user => Group.pCreate(req.body.name, [user]))
+    .then(user => Group.pCreate(req.body.name, user))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
