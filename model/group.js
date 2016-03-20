@@ -84,22 +84,25 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
 _.pPushUser = function(query, user) {
   console.log('Group.pPushUser');
   return new Promise(function(resolve, reject) {
-    model.findOneAndUpdate(query, {
-        $push: {
-          members: user._id
-        }
-      }, {
-        new: true
-      })
-      .lean()
-      .populate('members')
-      .populate('payments')
-      .exec(function(err, updatedGroup) {
+    model.findOne(query)
+      .exec(function(err, group) {
         if (err) return reject(Error.mongoose(500, err));
-        if (!updatedGroup) return reject(Error.invalidParameter);
-
-        console.log(updatedGroup);
-        resolve(updatedGroup);
+        if (!group) return reject(Error.invalidParameter);
+        if (group.members.indexOf(user._id) !== -1) {
+          return reject(Error.conficts);
+        }
+        group.members.push(user._id);
+        console.log(group);
+        group.save(function(err) {
+          if (err) return reject(Error.mongoose(500, err));
+          model.findOne(query)
+            .lean()
+            .populate('members')
+            .populate('payments')
+            .exec(function(err, group) {
+              resolve(group);
+            });
+        });
       });
   });
 };
