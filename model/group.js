@@ -30,12 +30,9 @@ _.pGet = function(user) {
   });
 };
 
-_.pGetOne = function(groupId) {
+_.pGetOne = function(query) {
   console.log('Group.pGetOne');
 
-  var query = {
-    uuid: groupId
-  };
   return new Promise(function(resolve, reject) {
     model.findOne(query)
       .lean()
@@ -84,13 +81,10 @@ _.pipeSuccessRenderAll = function(req, res, groups) {
 };
 
 
-_.pPushUser = function(groupId, user) {
+_.pPushUser = function(query, user) {
   console.log('Group.pPushUser');
   return new Promise(function(resolve, reject) {
-    var groupQuery = {
-      uuid: groupId
-    };
-    model.findOneAndUpdate(groupQuery, {
+    model.findOneAndUpdate(query, {
         $push: {
           members: user._id
         }

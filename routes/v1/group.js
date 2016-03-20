@@ -35,16 +35,20 @@ router.post('/', function(req, res) {
     .catch(error => Error.pipeErrorRender(req, res, error))
 })
 
-router.post('/:groupId/join', function(req, res) {
+router.post('/join', function(req, res) {
   var authQuery = {
       token: req.headers['x-session-token']
     },
     userQuery = {
       deleted: false
+    },
+    groupQuery = {
+      name: req.body.name
     };
+
   Auth.pGetOne(authQuery)
     .then(auth => User.pGetOne(userQuery, auth, req))
-    .then(user => Group.pPushUser(req.params.groupId, user))
+    .then(user => Group.pPushUser(groupQuery, user))
     .then(group => Group.pipeSuccessRender(req, res, group))
     .catch(error => Error.pipeErrorRender(req, res, error))
 });
@@ -57,7 +61,7 @@ router.post('/:groupId/payment', function(req, res) {
       title: req.body.title,
       price: req.body.price,
       payerId: req.body.payerId
-    }
+    };
   Auth.pGetOne(authQuery)
     .then(auth => Payment.pCreate(paymentQuery))
     .then(payment => Group.pPushPayment(req.params.groupId, payment))
