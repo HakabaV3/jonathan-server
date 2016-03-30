@@ -6,7 +6,7 @@ _.formatGroup = function(group) {
   return {
     id: group.uuid,
     name: group.name,
-    menbers: UserHelper.formatUsers(group.members),
+    members: UserHelper.formatUsers(group.members),
     payments: PaymentHelper.formatPayments(group.payments),
     created: group.created,
     updated: group.updated
