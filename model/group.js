@@ -22,9 +22,6 @@ _.pGet = function(user) {
       .populate('payments')
       .exec(function(err, groups) {
         if (err) return reject(Error.mongoose(500, err));
-
-        console.log('may be groups...');
-        console.log(groups);
         resolve(groups);
       });
   });
@@ -39,7 +36,6 @@ _.pGetOne = function(query) {
       .populate('members')
       .populate('payments')
       .exec(function(err, group) {
-        console.log(group);
         if (err) return reject(Error.mongoose(500, err));
         if (!group) return reject(Error.invalidParameter);
 
