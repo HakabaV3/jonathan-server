@@ -56,8 +56,13 @@ _.pCreate = function(name, user) {
       .save(function(err, createdGroup) {
         if (err) return reject(Error.mongoose(500, err));
         if (!createdGroup) return reject(Error.invalidParameter);
-
-        return resolve(createdGroup);
+        model
+          .findOne(createdGroup)
+          .populate('members')
+          .populate('payments')
+          .exec(function(err, group) {
+            resolve(group);
+          });
       });
   });
 };
